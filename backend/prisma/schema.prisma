@@ -1,0 +1,83 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  name         String
+  role         String   // 'patient' or 'therapist'
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  // Relations
+  schedules             TherapistSchedule[]
+  patientAppointments   Appointment[]       @relation("PatientAppointments")
+  therapistAppointments Appointment[]       @relation("TherapistAppointments")
+  patientRecurrences    Recurrence[]        @relation("PatientRecurrences")
+  therapistRecurrences  Recurrence[]        @relation("TherapistRecurrences")
+
+  @@map("users")
+}
+
+model TherapistSchedule {
+  id          String   @id @default(uuid())
+  therapistId String   @map("therapist_id")
+  dayOfWeek   Int      @map("day_of_week") // 0=Sunday, 1=Monday, ..., 6=Saturday
+  startTime   String   @map("start_time")  // "HH:mm" format
+  endTime     String   @map("end_time")    // "HH:mm" format
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  therapist User @relation(fields: [therapistId], references: [id])
+
+  @@map("therapist_schedules")
+}
+
+model Appointment {
+  id             String    @id @default(uuid())
+  patientId      String    @map("patient_id")
+  therapistId    String    @map("therapist_id")
+  startTime      DateTime  @map("start_time")
+  endTime        DateTime  @map("end_time")
+  status         String    @default("held") // held, scheduled, completed, no_show, cancelled
+  holdExpiresAt  DateTime? @map("hold_expires_at")
+  recurrenceId   String?   @map("recurrence_id")
+  idempotencyKey String?   @unique @map("idempotency_key")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  patient    User        @relation("PatientAppointments", fields: [patientId], references: [id])
+  therapist  User        @relation("TherapistAppointments", fields: [therapistId], references: [id])
+  recurrence Recurrence? @relation(fields: [recurrenceId], references: [id])
+
+  @@index([therapistId, startTime, status])
+  @@index([holdExpiresAt])
+  @@index([recurrenceId])
+  @@map("appointments")
+}
+
+model Recurrence {
+  id          String   @id @default(uuid())
+  patientId   String   @map("patient_id")
+  therapistId String   @map("therapist_id")
+  frequency   String   // daily, weekly, biweekly, monthly
+  dayOfWeek   Int?     @map("day_of_week")
+  startTime   String   @map("start_time") // "HH:mm"
+  endTime     String   @map("end_time")   // "HH:mm"
+  startDate   DateTime @map("start_date")
+  endDate     DateTime? @map("end_date")
+  status      String   @default("active") // active, cancelled
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  patient      User          @relation("PatientRecurrences", fields: [patientId], references: [id])
+  therapist    User          @relation("TherapistRecurrences", fields: [therapistId], references: [id])
+  appointments Appointment[]
+
+  @@map("recurrences")
+}
