@@ -17,26 +17,27 @@ function generateRecurrenceDates(frequency, startDate, startTimeStr, endTimeStr,
 
     switch (frequency) {
       case 'daily':
-        date.setDate(date.getDate() + i);
+        date.setUTCDate(date.getUTCDate() + i);
         break;
       case 'weekly':
-        date.setDate(date.getDate() + i * 7);
+        date.setUTCDate(date.getUTCDate() + i * 7);
         break;
       case 'biweekly':
-        date.setDate(date.getDate() + i * 14);
+        date.setUTCDate(date.getUTCDate() + i * 14);
         break;
       case 'monthly':
-        date.setMonth(date.getMonth() + i);
+        date.setUTCMonth(date.getUTCMonth() + i);
         break;
       default:
         throw new AppError(`Invalid frequency: ${frequency}`, 400);
     }
 
-    const startTime = new Date(date);
-    startTime.setHours(startH, startM, 0, 0);
+    const y = date.getUTCFullYear();
+    const m = date.getUTCMonth();
+    const d = date.getUTCDate();
 
-    const endTime = new Date(date);
-    endTime.setHours(endH, endM, 0, 0);
+    const startTime = new Date(Date.UTC(y, m, d, startH, startM, 0, 0));
+    const endTime = new Date(Date.UTC(y, m, d, endH, endM, 0, 0));
 
     dates.push({ startTime, endTime });
   }

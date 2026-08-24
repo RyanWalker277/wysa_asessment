@@ -45,9 +45,9 @@ export default function BookAppointment() {
   }, []);
 
   const formatDateInput = (d) => {
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
+    const year = typeof d.getUTCFullYear === 'function' ? d.getUTCFullYear() : d.getFullYear();
+    const month = String((typeof d.getUTCMonth === 'function' ? d.getUTCMonth() : d.getMonth()) + 1).padStart(2, '0');
+    const day = String(typeof d.getUTCDate === 'function' ? d.getUTCDate() : d.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   };
 
@@ -105,15 +105,16 @@ export default function BookAppointment() {
   };
 
   const changeDate = (offset) => {
-    const d = new Date(selectedDate + 'T00:00:00');
-    d.setDate(d.getDate() + offset);
-    setSelectedDate(formatDateInput(d));
+    const [y, m, d] = selectedDate.split('-').map(Number);
+    const dateUtc = new Date(Date.UTC(y, m - 1, d + offset));
+    setSelectedDate(formatDateInput(dateUtc));
   };
 
   const getDateDisplayStr = () => {
     if (!selectedDate) return '';
-    const d = new Date(selectedDate + 'T00:00:00');
-    return `${DAYS[d.getDay()]}, ${d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`;
+    const [y, m, d] = selectedDate.split('-').map(Number);
+    const dateUtc = new Date(Date.UTC(y, m - 1, d));
+    return `${DAYS[dateUtc.getUTCDay()]}, ${dateUtc.toLocaleDateString('en-US', { timeZone: 'UTC', month: 'long', day: 'numeric', year: 'numeric' })}`;
   };
 
   const getStepState = (s) => {

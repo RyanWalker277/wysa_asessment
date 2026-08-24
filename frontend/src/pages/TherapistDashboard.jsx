@@ -92,8 +92,8 @@ export default function TherapistDashboard() {
     return true;
   });
 
-  const formatDate = (d) => new Date(d).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-  const formatTime = (d) => new Date(d).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+  const formatDate = (d) => new Date(d).toLocaleDateString('en-US', { timeZone: 'UTC', weekday: 'short', month: 'short', day: 'numeric' });
+  const formatTime = (d) => new Date(d).toLocaleTimeString('en-US', { timeZone: 'UTC', hour: '2-digit', minute: '2-digit', hour12: true });
 
   const isInWindow = (apt) => {
     const start = new Date(apt.startTime);
@@ -170,21 +170,17 @@ export default function TherapistDashboard() {
                         )}
                       </td>
                       <td className="actions">
-                        {apt.status === 'scheduled' && (isInWindow(apt) || new Date(apt.endTime) < now) && (
-                          <>
-                            <button className="btn btn-success btn-sm" onClick={() => updateStatus(apt.id, 'completed')}>
-                              Complete
-                            </button>
-                            <button className="btn btn-danger btn-sm" onClick={() => updateStatus(apt.id, 'no_show')}>
-                              No-show
-                            </button>
-                          </>
-                        )}
-                        {apt.status === 'scheduled' && (
-                          <button className="btn btn-danger btn-sm" onClick={() => updateStatus(apt.id, 'cancelled')}>
-                            Cancel
-                          </button>
-                        )}
+                        <select
+                          className="form-select"
+                          style={{ padding: '6px 28px 6px 10px', fontSize: '0.8rem', width: 'auto', minWidth: '125px' }}
+                          value={apt.status}
+                          onChange={(e) => updateStatus(apt.id, e.target.value)}
+                        >
+                          <option value="scheduled">scheduled</option>
+                          <option value="completed">completed</option>
+                          <option value="no_show">no_show</option>
+                          <option value="cancelled">cancelled</option>
+                        </select>
                       </td>
                     </tr>
                   ))}

@@ -64,13 +64,14 @@ export default function HoldTimer({ holdData, onExpired, onConfirmed }) {
     const start = new Date(holdData.appointment.startTime);
     const end = new Date(holdData.appointment.endTime);
     const dateStr = start.toLocaleDateString('en-US', {
+      timeZone: 'UTC',
       weekday: 'long',
       month: 'long',
       day: 'numeric',
       year: 'numeric',
     });
-    const startStr = start.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-    const endStr = end.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+    const startStr = start.toLocaleTimeString('en-US', { timeZone: 'UTC', hour: '2-digit', minute: '2-digit', hour12: true });
+    const endStr = end.toLocaleTimeString('en-US', { timeZone: 'UTC', hour: '2-digit', minute: '2-digit', hour12: true });
     return { dateStr, timeStr: `${startStr} – ${endStr}` };
   };
 

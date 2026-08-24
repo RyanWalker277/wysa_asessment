@@ -7,10 +7,10 @@
 
 ### Exact Prompts
 
-**Prompt 1 — Initial Architecture Planning:**
-> "This is an empty directory, please complete the following assignment [full assignment text]. Associate Full-Stack Engineer: Take-Home Assignment..."
+**Prompt 1 — Data Modeling & Dynamic Slot Derivation:**
+> "How should we design the database schema and slot generation logic for an appointment booking system where therapist availability is defined by recurring daily/weekly time windows (rather than pre-seeded static slots), while supporting temporary 1-minute holds and recurring bookings?"
 
-This was the initial prompt that kicked off the entire project. The AI generated a detailed implementation plan covering database schema, API design, project structure, and key design decisions for review before writing any code.
+I used AI to explore trade-offs between pre-generating static slot rows vs. deriving slots dynamically at query time from therapist schedules. We decided to derive slots dynamically to ensure therapist schedule updates don't mutate or invalidate existing booking records.
 
 **Prompt 2 — Database Simplification:**
 > "Can we put the database as Sqlite for the sake of simplicity and deployment"
@@ -21,6 +21,11 @@ I chose to simplify from PostgreSQL to SQLite since the project is a take-home a
 > "Does sqlite provide a TTL feature, if yes then why do we need a cron job to clean things"
 
 I challenged the AI's initial design that included a cron job for cleaning expired holds. The AI had incorrectly labeled the approach as "SQLite TTL" when SQLite has no such feature. After this challenge, the design was simplified to lazy cleanup — no background process needed. Expired holds are simply filtered out during queries and cleaned up opportunistically during new transactions.
+
+**Prompt 4 — Timezone Discrepancy:**
+> "I selected 1pm appointment but it is showng this on the frontend: Mon, Aug 24, 2026 07:00 PM – 07:30 PM"
+
+I caught a timezone skew issue where the server (running in UTC) and the client browser (running in UTC+5:30) caused slot timestamps to shift by +5:30 hours when formatted with default browser locales. We resolved this by normalizing all datetime construction and formatting to UTC across both backend services and frontend components, guaranteeing identical wall-clock times regardless of cloud deployment region.
 
 ## Technical Decisions
 

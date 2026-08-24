@@ -1,7 +1,10 @@
 const jwt = require('jsonwebtoken');
+const { PrismaClient } = require('@prisma/client');
 const { AppError } = require('../utils/errors');
 
-function authenticate(req, res, next) {
+const prisma = new PrismaClient();
+
+async function authenticate(req, res, next) {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'No token provided' });
@@ -10,7 +13,16 @@ function authenticate(req, res, next) {
   const token = authHeader.split(' ')[1];
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.id },
+      select: { id: true, email: true, name: true, role: true },
+    });
+
+    if (!user) {
+      return res.status(401).json({ error: 'Session expired or user not found. Please log in again.' });
+    }
+
+    req.user = user;
     next();
   } catch (err) {
     return res.status(401).json({ error: 'Invalid or expired token' });

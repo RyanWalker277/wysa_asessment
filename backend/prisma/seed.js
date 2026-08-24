@@ -17,6 +17,7 @@ async function main() {
   // Create therapist
   const therapist = await prisma.user.create({
     data: {
+      id: 'a796de80-4ae7-4591-9158-a4e329e1a1c6',
       email: 'therapist@wysa.com',
       passwordHash,
       name: 'Dr. Sarah Johnson',
@@ -27,6 +28,7 @@ async function main() {
   // Create patients
   const patient1 = await prisma.user.create({
     data: {
+      id: 'b193e7b3-877a-4b5a-b677-9ea743351041',
       email: 'patient1@wysa.com',
       passwordHash,
       name: 'Alice Smith',
@@ -36,6 +38,7 @@ async function main() {
 
   const patient2 = await prisma.user.create({
     data: {
+      id: 'c293e7b3-877a-4b5a-b677-9ea743351042',
       email: 'patient2@wysa.com',
       passwordHash,
       name: 'Bob Wilson',

@@ -8,8 +8,9 @@ const prisma = new PrismaClient();
  * conflict with a recurring booking.
  */
 async function getAvailableSlots(therapistId, dateStr) {
-  const date = new Date(dateStr + 'T00:00:00');
-  const dayOfWeek = date.getDay(); // 0=Sunday
+  const [year, month, day] = dateStr.split('-').map(Number);
+  const dateUtc = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0));
+  const dayOfWeek = dateUtc.getUTCDay(); // 0=Sunday, 1=Monday, etc.
 
   // Get the therapist's schedule for this day of the week
   const scheduleSlots = await prisma.therapistSchedule.findMany({
@@ -19,17 +20,14 @@ async function getAvailableSlots(therapistId, dateStr) {
 
   if (scheduleSlots.length === 0) return [];
 
-  // Build concrete datetime for each slot on the requested date
+  // Build concrete datetime for each slot on the requested date in UTC
   const now = new Date();
   const slots = scheduleSlots.map((s) => {
     const [startH, startM] = s.startTime.split(':').map(Number);
     const [endH, endM] = s.endTime.split(':').map(Number);
 
-    const startTime = new Date(date);
-    startTime.setHours(startH, startM, 0, 0);
-
-    const endTime = new Date(date);
-    endTime.setHours(endH, endM, 0, 0);
+    const startTime = new Date(Date.UTC(year, month - 1, day, startH, startM, 0, 0));
+    const endTime = new Date(Date.UTC(year, month - 1, day, endH, endM, 0, 0));
 
     return {
       scheduleId: s.id,
@@ -41,10 +39,8 @@ async function getAvailableSlots(therapistId, dateStr) {
   });
 
   // Get existing appointments for this therapist on this date that block availability
-  const dayStart = new Date(date);
-  dayStart.setHours(0, 0, 0, 0);
-  const dayEnd = new Date(date);
-  dayEnd.setHours(23, 59, 59, 999);
+  const dayStart = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0));
+  const dayEnd = new Date(Date.UTC(year, month - 1, day, 23, 59, 59, 999));
 
   const existingAppointments = await prisma.appointment.findMany({
     where: {

@@ -59,16 +59,16 @@ async function confirmBooking(appointmentId, patientId, { recurrence, idempotenc
     // If recurring, create the recurrence and future appointments
     if (recurrence && recurrence.frequency) {
       const startDate = new Date(appointment.startTime);
-      const startTimeStr = `${String(startDate.getHours()).padStart(2, '0')}:${String(startDate.getMinutes()).padStart(2, '0')}`;
+      const startTimeStr = `${String(startDate.getUTCHours()).padStart(2, '0')}:${String(startDate.getUTCMinutes()).padStart(2, '0')}`;
       const endDate = new Date(appointment.endTime);
-      const endTimeStr = `${String(endDate.getHours()).padStart(2, '0')}:${String(endDate.getMinutes()).padStart(2, '0')}`;
+      const endTimeStr = `${String(endDate.getUTCHours()).padStart(2, '0')}:${String(endDate.getUTCMinutes()).padStart(2, '0')}`;
 
       const rec = await tx.recurrence.create({
         data: {
           patientId,
           therapistId: appointment.therapistId,
           frequency: recurrence.frequency,
-          dayOfWeek: startDate.getDay(),
+          dayOfWeek: startDate.getUTCDay(),
           startTime: startTimeStr,
           endTime: endTimeStr,
           startDate: startDate,

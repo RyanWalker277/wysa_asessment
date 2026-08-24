@@ -109,26 +109,7 @@ This project is configured for 1-click deployment on [Render](https://render.com
 
 **Approach**: The status update endpoint checks `now >= appointment.startTime` before allowing status changes (except cancellation, which is always allowed). This prevents premature status changes.
 
-## Project Structure
+### 8. Timezone Normalization Across Server & Client
+**Challenge**: The specification assumes users and therapists are in the same timezone. When the server runs in a cloud environment (e.g., UTC on Render) while users are in local timezones (e.g., UTC+5:30), converting timestamps with browser defaults causes time shifts (e.g., 1:30 PM shifting to 7:00 PM).
 
-```
-├── backend/
-│   ├── prisma/           # Schema, migrations, seed
-│   ├── src/
-│   │   ├── index.js      # Express entry point
-│   │   ├── middleware/    # JWT auth
-│   │   ├── routes/       # API endpoints
-│   │   ├── services/     # Business logic
-│   │   └── utils/        # Error handling
-│   └── package.json
-├── frontend/
-│   ├── src/
-│   │   ├── api/          # Axios client
-│   │   ├── components/   # Reusable UI
-│   │   ├── context/      # Auth state
-│   │   ├── pages/        # Route pages
-│   │   └── styles/       # CSS design system
-│   └── package.json
-├── README.md
-└── AI_USAGE.md
-```
+**Approach**: Dates and times are constructed and formatted using normalized UTC across both the backend (`Date.UTC`, `getUTCHours()`, `getUTCDay()`) and the frontend (`timeZone: 'UTC'` formatting). This ensures wall-clock schedule consistency regardless of cloud server region or client browser timezone.

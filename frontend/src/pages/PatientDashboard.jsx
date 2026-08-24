@@ -58,6 +58,7 @@ export default function PatientDashboard() {
 
   const formatDate = (d) => {
     return new Date(d).toLocaleDateString('en-US', {
+      timeZone: 'UTC',
       weekday: 'short',
       month: 'short',
       day: 'numeric',
@@ -67,6 +68,7 @@ export default function PatientDashboard() {
 
   const formatTime = (d) => {
     return new Date(d).toLocaleTimeString('en-US', {
+      timeZone: 'UTC',
       hour: '2-digit',
       minute: '2-digit',
       hour12: true,

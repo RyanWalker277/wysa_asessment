@@ -33,6 +33,14 @@ async function holdSlot(patientId, therapistId, startTime, endTime) {
 
   // Use a transaction to check for conflicts and create the hold atomically
   const appointment = await prisma.$transaction(async (tx) => {
+    // Check therapist exists
+    const therapist = await tx.user.findFirst({
+      where: { id: therapistId, role: 'therapist' },
+    });
+    if (!therapist) {
+      throw new AppError('Therapist not found', 404);
+    }
+
     // Clean up any expired holds on this exact slot
     await tx.appointment.deleteMany({
       where: {
